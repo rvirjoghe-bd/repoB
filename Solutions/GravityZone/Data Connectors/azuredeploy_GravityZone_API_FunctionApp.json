@@ -1,0 +1,863 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "metadata": {
+    "_generator": {
+      "name": "bicep",
+      "version": "0.37.4.10188",
+      "templateHash": "11779042909757777142"
+    }
+  },
+  "parameters": {
+    "EntraAppObjectId": {
+      "type": "string"
+    },
+    "endpointEventsTableName": {
+      "type": "string",
+      "defaultValue": "EndpointEvents_CL"
+    },
+    "securityIncidentsTableName": {
+      "type": "string",
+      "defaultValue": "SecurityIncidents_CL"
+    },
+    "otherEventsTableName": {
+      "type": "string",
+      "defaultValue": "OtherEvents_CL"
+    }
+  },
+  "variables": {
+    "prefix": "GZ",
+    "vendorTag": "Bitdefender",
+    "applicationTag": "GravityZone Log Ingestion"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "law-deployment",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "location": {
+            "value": "[resourceGroup().location]"
+          },
+          "workspaceName": {
+            "value": "[format('{0}-law', variables('prefix'))]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.37.4.10188",
+              "templateHash": "13420295837173941312"
+            }
+          },
+          "parameters": {
+            "workspaceName": {
+              "type": "string"
+            },
+            "location": {
+              "type": "string",
+              "defaultValue": "[resourceGroup().location]"
+            },
+            "sku": {
+              "type": "string",
+              "defaultValue": "PerGB2018"
+            },
+            "retentionInDays": {
+              "type": "int",
+              "defaultValue": 30
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.OperationalInsights/workspaces",
+              "apiVersion": "2023-09-01",
+              "name": "[parameters('workspaceName')]",
+              "location": "[parameters('location')]",
+              "properties": {
+                "sku": {
+                  "name": "[parameters('sku')]"
+                },
+                "retentionInDays": "[parameters('retentionInDays')]"
+              }
+            }
+          ],
+          "outputs": {
+            "workspaceId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]"
+            },
+            "workspaceShortId": {
+              "type": "string",
+              "value": "[split(resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName')), '/')[8]]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "table-deployment",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "workspaceShortId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'law-deployment'), '2022-09-01').outputs.workspaceShortId.value]"
+          },
+          "endpointEventsTableName": {
+            "value": "[parameters('endpointEventsTableName')]"
+          },
+          "securityIncidentsTableName": {
+            "value": "[parameters('securityIncidentsTableName')]"
+          },
+          "otherEventsTableName": {
+            "value": "[parameters('otherEventsTableName')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.37.4.10188",
+              "templateHash": "3713818694822976784"
+            }
+          },
+          "parameters": {
+            "workspaceShortId": {
+              "type": "string"
+            },
+            "endpointEventsTableName": {
+              "type": "string"
+            },
+            "securityIncidentsTableName": {
+              "type": "string"
+            },
+            "otherEventsTableName": {
+              "type": "string"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.OperationalInsights/workspaces/tables",
+              "apiVersion": "2023-09-01",
+              "name": "[format('{0}/{1}', parameters('workspaceShortId'), parameters('endpointEventsTableName'))]",
+              "properties": {
+                "schema": {
+                  "name": "[parameters('endpointEventsTableName')]",
+                  "columns": [
+                    {
+                      "name": "TimeGenerated",
+                      "type": "datetime"
+                    },
+                    {
+                      "name": "company_id",
+                      "type": "string"
+                    },
+                    {
+                      "name": "module",
+                      "type": "string"
+                    },
+                    {
+                      "name": "computer_id",
+                      "type": "string"
+                    },
+                    {
+                      "name": "computer_fqdn",
+                      "type": "string"
+                    },
+                    {
+                      "name": "computer_name",
+                      "type": "string"
+                    },
+                    {
+                      "name": "product_installed",
+                      "type": "string"
+                    },
+                    {
+                      "name": "computer_ip",
+                      "type": "string"
+                    },
+                    {
+                      "name": "data",
+                      "type": "dynamic"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "type": "Microsoft.OperationalInsights/workspaces/tables",
+              "apiVersion": "2023-09-01",
+              "name": "[format('{0}/{1}', parameters('workspaceShortId'), parameters('securityIncidentsTableName'))]",
+              "properties": {
+                "schema": {
+                  "name": "[parameters('securityIncidentsTableName')]",
+                  "columns": [
+                    {
+                      "name": "TimeGenerated",
+                      "type": "datetime"
+                    },
+                    {
+                      "name": "company_id",
+                      "type": "string"
+                    },
+                    {
+                      "name": "module",
+                      "type": "string"
+                    },
+                    {
+                      "name": "incident_id",
+                      "type": "string"
+                    },
+                    {
+                      "name": "severity_score",
+                      "type": "int"
+                    },
+                    {
+                      "name": "main_action",
+                      "type": "string"
+                    },
+                    {
+                      "name": "data",
+                      "type": "dynamic"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "type": "Microsoft.OperationalInsights/workspaces/tables",
+              "apiVersion": "2023-09-01",
+              "name": "[format('{0}/{1}', parameters('workspaceShortId'), parameters('otherEventsTableName'))]",
+              "properties": {
+                "schema": {
+                  "name": "[parameters('otherEventsTableName')]",
+                  "columns": [
+                    {
+                      "name": "TimeGenerated",
+                      "type": "datetime"
+                    },
+                    {
+                      "name": "company_id",
+                      "type": "string"
+                    },
+                    {
+                      "name": "module",
+                      "type": "string"
+                    },
+                    {
+                      "name": "data",
+                      "type": "dynamic"
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'law-deployment')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "dce-deployment",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "vendorTag": {
+            "value": "[variables('vendorTag')]"
+          },
+          "applicationTag": {
+            "value": "[variables('applicationTag')]"
+          },
+          "location": {
+            "value": "[resourceGroup().location]"
+          },
+          "name": {
+            "value": "[format('{0}-dce', variables('prefix'))]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.37.4.10188",
+              "templateHash": "7900969657415390787"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "vendorTag": {
+              "type": "string"
+            },
+            "applicationTag": {
+              "type": "string"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Insights/dataCollectionEndpoints",
+              "apiVersion": "2023-03-11",
+              "name": "[parameters('name')]",
+              "location": "[parameters('location')]",
+              "tags": {
+                "vendor": "[parameters('vendorTag')]",
+                "application": "[parameters('applicationTag')]"
+              },
+              "properties": {
+                "networkAcls": {
+                  "publicNetworkAccess": "Enabled"
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "dceId": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Insights/dataCollectionEndpoints', parameters('name'))]"
+            },
+            "dceName": {
+              "type": "string",
+              "value": "[parameters('name')]"
+            },
+            "dceEndpoint": {
+              "type": "string",
+              "value": "[reference(resourceId('Microsoft.Insights/dataCollectionEndpoints', parameters('name')), '2023-03-11').logsIngestion.endpoint]"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'table-deployment')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "dcr-deployment",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "vendorTag": {
+            "value": "[variables('vendorTag')]"
+          },
+          "applicationTag": {
+            "value": "[variables('applicationTag')]"
+          },
+          "location": {
+            "value": "[resourceGroup().location]"
+          },
+          "workspaceResourceId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'law-deployment'), '2022-09-01').outputs.workspaceId.value]"
+          },
+          "workspaceShortId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'law-deployment'), '2022-09-01').outputs.workspaceShortId.value]"
+          },
+          "dataCollectionEndpointId": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'dce-deployment'), '2022-09-01').outputs.dceId.value]"
+          },
+          "endpointEventsTableName": {
+            "value": "[parameters('endpointEventsTableName')]"
+          },
+          "securityIncidentsTableName": {
+            "value": "[parameters('securityIncidentsTableName')]"
+          },
+          "otherEventsTableName": {
+            "value": "[parameters('otherEventsTableName')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.37.4.10188",
+              "templateHash": "5942401711595438245"
+            }
+          },
+          "parameters": {
+            "location": {
+              "type": "string"
+            },
+            "workspaceResourceId": {
+              "type": "string"
+            },
+            "workspaceShortId": {
+              "type": "string"
+            },
+            "dataCollectionEndpointId": {
+              "type": "string"
+            },
+            "vendorTag": {
+              "type": "string"
+            },
+            "applicationTag": {
+              "type": "string"
+            },
+            "endpointEventsTableName": {
+              "type": "string"
+            },
+            "securityIncidentsTableName": {
+              "type": "string"
+            },
+            "otherEventsTableName": {
+              "type": "string"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Insights/dataCollectionRules",
+              "apiVersion": "2023-03-11",
+              "name": "endpoint-events-dcr",
+              "location": "[parameters('location')]",
+              "tags": {
+                "vendor": "[parameters('vendorTag')]",
+                "application": "[parameters('applicationTag')]"
+              },
+              "identity": {
+                "type": "SystemAssigned"
+              },
+              "kind": "Direct",
+              "properties": {
+                "dataCollectionEndpointId": "[parameters('dataCollectionEndpointId')]",
+                "dataFlows": [
+                  {
+                    "streams": [
+                      "[format('Custom-Ingress-{0}', parameters('endpointEventsTableName'))]"
+                    ],
+                    "destinations": [
+                      "[parameters('workspaceShortId')]"
+                    ],
+                    "transformKql": "            source\n            | extend TimeGenerated = todatetime(created)\n            | extend company_id = tostring(companyId)\n            | extend module = tostring(module)\n            | project module, company_id, TimeGenerated\n        ",
+                    "outputStream": "[format('Custom-{0}', parameters('endpointEventsTableName'))]"
+                  }
+                ],
+                "streamDeclarations": {
+                  "[format('Custom-Ingress-{0}', parameters('endpointEventsTableName'))]": {
+                    "columns": [
+                      {
+                        "name": "created",
+                        "type": "string"
+                      },
+                      {
+                        "name": "module",
+                        "type": "string"
+                      },
+                      {
+                        "name": "companyId",
+                        "type": "string"
+                      }
+                    ]
+                  }
+                },
+                "dataSources": {},
+                "destinations": {
+                  "logAnalytics": [
+                    {
+                      "workspaceResourceId": "[parameters('workspaceResourceId')]",
+                      "name": "[parameters('workspaceShortId')]"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Insights/dataCollectionRules",
+              "apiVersion": "2023-03-11",
+              "name": "security-incidents-dcr",
+              "location": "[parameters('location')]",
+              "tags": {
+                "vendor": "[parameters('vendorTag')]",
+                "application": "[parameters('applicationTag')]"
+              },
+              "identity": {
+                "type": "SystemAssigned"
+              },
+              "kind": "Direct",
+              "properties": {
+                "dataCollectionEndpointId": "[parameters('dataCollectionEndpointId')]",
+                "dataFlows": [
+                  {
+                    "streams": [
+                      "[format('Custom-Ingress-{0}', parameters('securityIncidentsTableName'))]"
+                    ],
+                    "destinations": [
+                      "[parameters('workspaceShortId')]"
+                    ],
+                    "transformKql": "            source\n            | extend TimeGenerated = todatetime(created)\n            | extend module = tostring(module)\n            | extend company_id = tostring(companyId)\n            | extend endpoint_id = tostring(endpointId)\n            | extend incident_id = tostring(incident_id)\n            | extend main_action = tostring(main_action)\n            | extend severity_score = toint(severityScore)\n        ",
+                    "outputStream": "[format('Custom-{0}', parameters('securityIncidentsTableName'))]"
+                  }
+                ],
+                "streamDeclarations": {
+                  "[format('Custom-Ingress-{0}', parameters('securityIncidentsTableName'))]": {
+                    "columns": [
+                      {
+                        "name": "module",
+                        "type": "string"
+                      },
+                      {
+                        "name": "created",
+                        "type": "string"
+                      },
+                      {
+                        "name": "companyId",
+                        "type": "string"
+                      },
+                      {
+                        "name": "incident_id",
+                        "type": "string"
+                      },
+                      {
+                        "name": "main_action",
+                        "type": "string"
+                      },
+                      {
+                        "name": "severityScore",
+                        "type": "int"
+                      },
+                      {
+                        "name": "computer_name",
+                        "type": "string"
+                      },
+                      {
+                        "name": "computer_fqdn",
+                        "type": "string"
+                      },
+                      {
+                        "name": "computer_ip",
+                        "type": "string"
+                      },
+                      {
+                        "name": "computer_id",
+                        "type": "string"
+                      },
+                      {
+                        "name": "endpoint_id",
+                        "type": "string"
+                      },
+                      {
+                        "name": "attack_entry",
+                        "type": "int"
+                      },
+                      {
+                        "name": "detection_name",
+                        "type": "string"
+                      },
+                      {
+                        "name": "file_name",
+                        "type": "string"
+                      },
+                      {
+                        "name": "file_path",
+                        "type": "string"
+                      },
+                      {
+                        "name": "file_hash_md5",
+                        "type": "string"
+                      },
+                      {
+                        "name": "file_hash_sha256",
+                        "type": "string"
+                      },
+                      {
+                        "name": "url",
+                        "type": "string"
+                      },
+                      {
+                        "name": "port",
+                        "type": "int"
+                      },
+                      {
+                        "name": "protocol",
+                        "type": "string"
+                      },
+                      {
+                        "name": "source_ip",
+                        "type": "string"
+                      },
+                      {
+                        "name": "process_pid",
+                        "type": "int"
+                      },
+                      {
+                        "name": "process_path",
+                        "type": "string"
+                      },
+                      {
+                        "name": "parent_process_pid",
+                        "type": "int"
+                      },
+                      {
+                        "name": "parent_process_path",
+                        "type": "string"
+                      },
+                      {
+                        "name": "attack_types",
+                        "type": "dynamic"
+                      },
+                      {
+                        "name": "att_ck_id",
+                        "type": "dynamic"
+                      },
+                      {
+                        "name": "process_command_line",
+                        "type": "string"
+                      },
+                      {
+                        "name": "severity",
+                        "type": "string"
+                      },
+                      {
+                        "name": "endpointId",
+                        "type": "string"
+                      },
+                      {
+                        "name": "username",
+                        "type": "string"
+                      },
+                      {
+                        "name": "user_sid",
+                        "type": "string"
+                      },
+                      {
+                        "name": "nodes",
+                        "type": "dynamic"
+                      }
+                    ]
+                  }
+                },
+                "dataSources": {},
+                "destinations": {
+                  "logAnalytics": [
+                    {
+                      "workspaceResourceId": "[parameters('workspaceResourceId')]",
+                      "name": "[parameters('workspaceShortId')]"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Insights/dataCollectionRules",
+              "apiVersion": "2023-03-11",
+              "name": "other-events-dcr",
+              "location": "[parameters('location')]",
+              "tags": {
+                "vendor": "[parameters('vendorTag')]",
+                "application": "[parameters('applicationTag')]"
+              },
+              "identity": {
+                "type": "SystemAssigned"
+              },
+              "kind": "Direct",
+              "properties": {
+                "dataCollectionEndpointId": "[parameters('dataCollectionEndpointId')]",
+                "dataFlows": [
+                  {
+                    "streams": [
+                      "[format('Custom-Ingress-{0}', parameters('otherEventsTableName'))]"
+                    ],
+                    "destinations": [
+                      "[parameters('workspaceShortId')]"
+                    ],
+                    "transformKql": "            source\n            | extend TimeGenerated = todatetime(created)\n            | extend module = tostring(module)\n            | extend company_id = tostring(companyId)\n        ",
+                    "outputStream": "[format('Custom-{0}', parameters('otherEventsTableName'))]"
+                  }
+                ],
+                "streamDeclarations": {
+                  "[format('Custom-Ingress-{0}', parameters('otherEventsTableName'))]": {
+                    "columns": [
+                      {
+                        "name": "module",
+                        "type": "string"
+                      },
+                      {
+                        "name": "companyId",
+                        "type": "string"
+                      },
+                      {
+                        "name": "created",
+                        "type": "string"
+                      },
+                      {
+                        "name": "data",
+                        "type": "dynamic"
+                      }
+                    ]
+                  }
+                },
+                "dataSources": {},
+                "destinations": {
+                  "logAnalytics": [
+                    {
+                      "workspaceResourceId": "[parameters('workspaceResourceId')]",
+                      "name": "[parameters('workspaceShortId')]"
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "outputs": {
+            "endpointEventsDCRName": {
+              "type": "string",
+              "value": "endpoint-events-dcr"
+            },
+            "securityIncidentsDCRName": {
+              "type": "string",
+              "value": "security-incidents-dcr"
+            },
+            "otherEventsDCRName": {
+              "type": "string",
+              "value": "other-events-dcr"
+            }
+          }
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'dce-deployment')]",
+        "[resourceId('Microsoft.Resources/deployments', 'law-deployment')]"
+      ]
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "role-assignments-deployment",
+      "properties": {
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "mode": "Incremental",
+        "parameters": {
+          "entraAppObjectId": {
+            "value": "[parameters('EntraAppObjectId')]"
+          },
+          "endpointEventsTableName": {
+            "value": "[parameters('endpointEventsTableName')]"
+          },
+          "securityIncidentsTableName": {
+            "value": "[parameters('securityIncidentsTableName')]"
+          },
+          "otherEventsTableName": {
+            "value": "[parameters('otherEventsTableName')]"
+          },
+          "endpointEventsDCRName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'dcr-deployment'), '2022-09-01').outputs.endpointEventsDCRName.value]"
+          },
+          "securityIncidentsDCRName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'dcr-deployment'), '2022-09-01').outputs.securityIncidentsDCRName.value]"
+          },
+          "otherEventsDCRName": {
+            "value": "[reference(resourceId('Microsoft.Resources/deployments', 'dcr-deployment'), '2022-09-01').outputs.otherEventsDCRName.value]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "metadata": {
+            "_generator": {
+              "name": "bicep",
+              "version": "0.37.4.10188",
+              "templateHash": "317914638882295678"
+            }
+          },
+          "parameters": {
+            "entraAppObjectId": {
+              "type": "string"
+            },
+            "endpointEventsTableName": {
+              "type": "string"
+            },
+            "securityIncidentsTableName": {
+              "type": "string"
+            },
+            "otherEventsTableName": {
+              "type": "string"
+            },
+            "endpointEventsDCRName": {
+              "type": "string"
+            },
+            "securityIncidentsDCRName": {
+              "type": "string"
+            },
+            "otherEventsDCRName": {
+              "type": "string"
+            }
+          },
+          "variables": {
+            "monitoringMetricsPublisherRoleId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '3913510d-42f4-4e42-8a64-420c390055eb')]"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2022-04-01",
+              "scope": "[format('Microsoft.Insights/dataCollectionRules/{0}', parameters('endpointEventsDCRName'))]",
+              "name": "[guid(parameters('endpointEventsDCRName'), 'MonitoringMetricsPublisher', parameters('entraAppObjectId'))]",
+              "properties": {
+                "roleDefinitionId": "[variables('monitoringMetricsPublisherRoleId')]",
+                "principalId": "[parameters('entraAppObjectId')]",
+                "principalType": "ServicePrincipal"
+              }
+            },
+            {
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2022-04-01",
+              "scope": "[format('Microsoft.Insights/dataCollectionRules/{0}', parameters('securityIncidentsDCRName'))]",
+              "name": "[guid(parameters('securityIncidentsDCRName'), 'MonitoringMetricsPublisher', parameters('entraAppObjectId'))]",
+              "properties": {
+                "roleDefinitionId": "[variables('monitoringMetricsPublisherRoleId')]",
+                "principalId": "[parameters('entraAppObjectId')]",
+                "principalType": "ServicePrincipal"
+              }
+            },
+            {
+              "type": "Microsoft.Authorization/roleAssignments",
+              "apiVersion": "2022-04-01",
+              "scope": "[format('Microsoft.Insights/dataCollectionRules/{0}', parameters('otherEventsDCRName'))]",
+              "name": "[guid(parameters('otherEventsDCRName'), 'MonitoringMetricsPublisher', parameters('entraAppObjectId'))]",
+              "properties": {
+                "roleDefinitionId": "[variables('monitoringMetricsPublisherRoleId')]",
+                "principalId": "[parameters('entraAppObjectId')]",
+                "principalType": "ServicePrincipal"
+              }
+            }
+          ]
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Resources/deployments', 'table-deployment')]",
+        "[resourceId('Microsoft.Resources/deployments', 'dcr-deployment')]"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,61 @@
+{
+    "id": "GravityZoneDataConnector",
+    "title": "GravityZone Data Connector",
+    "publisher": "Bitdefender",
+    "descriptionMarkdown": "TODO",
+    "additionalRequirementBanner": "TODO",
+    "graphQueries": [
+        {
+            "metricName": "Total events received",
+            "legend": "Events",
+            "baseQuery": "GravityZoneEvents_CL"
+        }
+    ],
+    "sampleQueries": [
+        {
+            "description": "Get Sample Events",
+            "query": "GravityZoneEvents_CL\n | take 10"
+        }
+    ],
+    "dataTypes": [
+        {
+            "name": "GravityZoneEvents_CL",
+            "lastDataReceivedQuery": "GravityZoneEvents_CL\n | summarize Time = max(TimeGenerated)"
+        }
+    ],
+    "connectivityCriterias": [
+        {
+            "type": "IsConnectedQuery",
+            "value": [
+                "GravityZoneEvents_CL\n | summarize LastLogReceived = max(TimeGenerated)\n | project IsConnected = LastLogReceived > ago(7d)"
+            ]
+        }
+    ],
+    "availability": {
+        "status": 1,
+        "isPreview": false
+    },
+    "permissions": {
+        "resourceProvider": [
+            {
+                "provider": "Microsoft.OperationalInsights/workspaces",
+                "permissionsDisplayText": "read and write permissions on the workspace are required.",
+                "providerDisplayName": "Workspace",
+                "scope": "Workspace",
+                "requiredPermissions": {
+                    "write": true,
+                    "read": true,
+                    "delete": true
+                }
+            }
+        ],
+        "customs": [
+
+        ]
+    },
+    "instructionSteps": [
+        {
+            "description": "To proceed with the Microsoft Sentinel setup\n\n1. Click the **Deploy to Azure** button below. \n\n\t\n\n[![Deploy To Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Frvirjoghe-bd%2Fazure-sentinel-test%2Fmain%2Fazuredeploy_Rvtest_API_FunctionApp.json)\n\n2. **Please note that after the successful deployment, the system pulls Activity Log data every 1 minute by default.**"
+        }
+    ]
+}
