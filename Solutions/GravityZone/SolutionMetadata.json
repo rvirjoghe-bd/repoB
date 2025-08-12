@@ -1,0 +1,19 @@
+{
+	"publisherId": "bitdefender",
+	"offerId": "azure-sentinel-solution-gravityzone",
+	"firstPublishDate": "2025-07-28",
+	"providers": ["Bitdefender"],
+	"categories": {
+		"domains": [
+            "Security - Information Protection",
+            "Security - Cloud Security",
+            "Security - Threat Protection"
+          ]
+	},
+	"support": {
+		"name": "Microsoft Corporation",
+		"email": "support@microsoft.com",
+		"tier": "Microsoft",
+		"link": "https://support.microsoft.com"
+	}
+}
