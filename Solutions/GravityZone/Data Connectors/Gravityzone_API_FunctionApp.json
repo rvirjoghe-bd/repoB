@@ -55,7 +55,7 @@
     },
     "instructionSteps": [
         {
-            "description": "To proceed with the Microsoft Sentinel setup\n\n1. Click the **Deploy to Azure** button below. \n\n\t\n\n[![Deploy To Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Frvirjoghe-bd%2Fazure-sentinel-test%2Fmain%2Fazuredeploy_Rvtest_API_FunctionApp.json)\n\n2. **Please note that after the successful deployment, the system pulls Activity Log data every 1 minute by default.**"
+            "description": "To proceed with the Microsoft Sentinel setup\n\n1. Click the **Deploy to Azure** button below. \n\n\t\n\n[![Deploy To Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Frvirjoghe-bd%2FrepoB%2Fmain%2FSolutions%2FGravityZone%2FData%20Connectors%2Fazuredeploy_GravityZone_API_FunctionApp.json)\n\n2. **Please note that after the successful deployment, the system pulls Activity Log data every 1 minute by default.**"
         }
     ]
 }
