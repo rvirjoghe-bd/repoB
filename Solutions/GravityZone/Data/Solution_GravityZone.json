@@ -1,8 +1,9 @@
 {
   "Name": "GravityZone",
-  "Author": "bitdefender",
+  "Author": "Bitdefender SRL",
   "Logo": "<img src=\"https://raw.githubusercontent.com/Azure/Azure-Sentinel/master/Logos/GravityZone.svg\" width=\"75px\" height=\"75px\">",
   "Description": "TODO",
+  "WorkbookBladeDescription": "This Microsoft Sentinel Solution installs workbooks. Workbooks provide a flexible canvas for data monitoring, analysis, and creating rich visual reports within the Azure portal. They allow you to combine one or more data sources from Microsoft Sentinel into unified interactive experience.",
   "Data Connectors": [
     "Data Connectors/GravityZone_API_FunctionApp.json"
   ],
