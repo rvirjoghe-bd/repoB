@@ -8,10 +8,12 @@
     "Data Connectors/GravityZone_API_FunctionApp.json"
   ],
   "Workbooks": [
+    "Workbooks/GravityZone.json"
   ],
   "Parsers": [
   ],
   "Analytic Rules": [
+    "Analytic Rules/new_incident.yaml"
   ],
   "BasePath": "https://github.com/Azure/Azure-Sentinel/tree/master/Solutions/GravityZone/",
   "Version": "3.0.0",
